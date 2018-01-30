@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 
+namespace logger {
+class Logger;
+}
+
 namespace Ui {
 class MainWindow;
 }
@@ -17,6 +21,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    logger::Logger *log;
 };
 
 #endif // MAINWINDOW_H

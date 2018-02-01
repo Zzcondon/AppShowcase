@@ -48,9 +48,8 @@ private:
     logger::Logger      *log;
 
     QList<RotatingListWidget *> activeWidgets;
-    QList<RotatingListWidget *> hiddenWidgets;
 
-    int     maxActiveWidgets;
+    int     firstIndex;
 
     int     widgetHeight_pix;
     int     widgetWidth_pix;

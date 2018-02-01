@@ -3,14 +3,17 @@
 
 #include "logger.h"
 #include "math.h"
+#include <cmath>
 
 #include <QDebug>
 
+#ifndef M_PI
+const double M_PI = 3.14159265358979323846;
+#endif
 
 RotatingList::RotatingList(QWidget *parent) : QFrame(parent),
+    firstIndex(0),
     activeWidgets(),
-    hiddenWidgets(),
-    maxActiveWidgets(5),
     widgetHeight_pix(50),
     widgetWidth_pix(150),
     prevMouseHoldLocation()
@@ -84,13 +87,7 @@ void RotatingList::addWidget(QString widgetText) {
     nWidget->setFixedSize(widgetWidth_pix, widgetHeight_pix);
     nWidget->setText(widgetText);
 
-    if (activeWidgets.size() < maxActiveWidgets) {
-        activeWidgets.push_front(nWidget);
-    }
-    else {
-        hiddenWidgets.push_back(nWidget);
-    }
-
+    activeWidgets.push_front(nWidget);
 
 }
 
@@ -156,9 +153,6 @@ void RotatingList::updatePositions() {
         activeWidgets.at(numActive)->show();
     }
 
-    for (int numHidden = 0; numHidden < hiddenWidgets.size(); numHidden++) {
-        hiddenWidgets.at(numHidden)->hide();
-    }
 }
 
 void RotatingList::updatePositions_mid(int bWidth_pix, int bHeight_pix, int iWidth_pix, int iHeight_pix, int index) {
@@ -280,6 +274,8 @@ double RotatingList::calculateCirclarIntercept(double posY) {
 
 double RotatingList::calculateArcAngle(int posY_1, int posY_2) {
 
+    double arc_deg = 0;
+
     double normY_1 = (double(posY_1) / double(this->height())) * 100;
     double normY_2 = (double(posY_2) / double(this->height())) * 100;
 
@@ -293,9 +289,10 @@ double RotatingList::calculateArcAngle(int posY_1, int posY_2) {
         //log->info(QString("Dist: %1").arg(s1));
 
         double arc_rad = (asin(((s1 - 50) / 50)));//(pow(s2, 2) + pow(s3, 2) - pow(s1, 2)) / (2 * s2 * s3);
-        double arc_deg = (arc_rad * 180) / M_PI + 90;
-        return arc_deg;
+        arc_deg = (arc_rad * 180) / M_PI + 90;
     }
+
+    return arc_deg;
 }
 
 double RotatingList::dist(double x1, double y1, double x2, double y2) {

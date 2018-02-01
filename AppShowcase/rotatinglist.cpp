@@ -71,7 +71,7 @@ void RotatingList::mousePressEvent(QMouseEvent *event) {
 
 void RotatingList::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
-        log->info(QString("ARC %1").arg((calculateArcAngle(prevMouseHoldLocation.y(), event->pos().y()) * 180) / M_PI));
+        log->info(QString("ARC %1").arg((calculateArcAngle(prevMouseHoldLocation.y(), event->pos().y()))));
     }
 }
 
@@ -283,15 +283,21 @@ double RotatingList::calculateArcAngle(int posY_1, int posY_2) {
     double normY_1 = (double(posY_1) / double(this->height())) * 100;
     double normY_2 = (double(posY_2) / double(this->height())) * 100;
 
-    if ((normY_1 > 0) && (normY_2 > 0) &&
-        (normY_1 < 100) && (normY_2 < 100)) {
+    if ((normY_1 >= 0) && (normY_2 >= 0) &&
+        (normY_1 <= 100) && (normY_2 <= 100)) {
         double posX_1 = calculateCirclarIntercept(normY_1);
         double posX_2 = calculateCirclarIntercept(normY_2);
 
-        log->info(QString("(%1, %2) (%3, %4)").arg(posX_1).arg(normY_1).arg(posX_2).arg(normY_2));
+        double s1 = dist(posX_1, normY_1, posX_2, normY_2);
+        //log->info(QString("a: %1 b: %2 c: %3").arg(s2).arg(s3).arg(s1));
+        //log->info(QString("Dist: %1").arg(s1));
 
-        double arc = atan2(normY_2 - normY_1, posX_2 - posX_1);
-
-        return arc;
+        double arc_rad = (asin(((s1 - 50) / 50)));//(pow(s2, 2) + pow(s3, 2) - pow(s1, 2)) / (2 * s2 * s3);
+        double arc_deg = (arc_rad * 180) / M_PI + 90;
+        return arc_deg;
     }
+}
+
+double RotatingList::dist(double x1, double y1, double x2, double y2) {
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }

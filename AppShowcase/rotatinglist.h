@@ -43,6 +43,8 @@ private:
 
     double calculateCirclarIntercept(double posY);
     double calculateArcAngle(int posY_1, int posY_2);
+    double dist(double x1, double y1, double x2, double y2);
+
     logger::Logger      *log;
 
     QList<RotatingListWidget *> activeWidgets;

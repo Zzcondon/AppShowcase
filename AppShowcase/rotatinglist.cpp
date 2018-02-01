@@ -2,15 +2,21 @@
 #include "rotatinglistwidget.h"
 
 #include "logger.h"
+#include "math.h"
 
-RotatingList::RotatingList(QWidget *parent) : QWidget(parent),
+#include <QDebug>
+
+
+RotatingList::RotatingList(QWidget *parent) : QFrame(parent),
     activeWidgets(),
     hiddenWidgets(),
     maxActiveWidgets(5),
     widgetHeight_pix(50),
-    widgetWidth_pix(150)
+    widgetWidth_pix(150),
+    prevMouseHoldLocation()
 {
-
+    setMouseTracking(true);
+    setFrameStyle(QFrame::Box);
 }
 
 bool RotatingList::init(logger::Logger *nLog) {
@@ -54,15 +60,19 @@ void RotatingList::resizeEvent(QResizeEvent * /*event*/) {
 void RotatingList::mousePressEvent(QMouseEvent *event) {
     log->trace("Mouse Event");
     if (event->buttons() & Qt::LeftButton) {
-        rotateUp();
-        log->trace("Mouse Event Up");
+        prevMouseHoldLocation = event->pos();
     }
-    else if (event->button() & Qt::RightButton) {
-        rotateDown();
-        log->trace("Mouse Event Down");
+    else if (event->buttons() & Qt::RightButton) {
+
     }
 
     updatePositions();
+}
+
+void RotatingList::mouseMoveEvent(QMouseEvent *event) {
+    if (event->buttons() & Qt::LeftButton) {
+        log->info(QString("ARC %1").arg((calculateArcAngle(prevMouseHoldLocation.y(), event->pos().y()) * 180) / M_PI));
+    }
 }
 
 void RotatingList::addWidget(QString widgetText) {
@@ -206,6 +216,8 @@ void RotatingList::updatePositions_midBot(int bWidth_pix, int bHeight_pix, int i
 
 }
 
+//Calculate angle of different mouse positions, rotate that angle, get new dif_y for each item
+
 void RotatingList::updatePositions_top(int bWidth_pix, int bHeight_pix, int iWidth_pix, int iHeight_pix, int index) {
 
     double sizeReduction_percent = 0.90;
@@ -252,4 +264,34 @@ void RotatingList::rotateUp() {
 
     hiddenWidgets.prepend(activeWidgets.takeFirst());
     activeWidgets.append(hiddenWidgets.takeLast());
+}
+
+double RotatingList::calculateCirclarIntercept(double posY) {
+    double rVal = 0;
+
+    double a1 = pow(posY - 50, 2);
+    double a2 = pow(50, 2);
+
+    double initial = a2 - a1;
+    rVal = sqrt(initial);
+
+    return rVal;
+}
+
+double RotatingList::calculateArcAngle(int posY_1, int posY_2) {
+
+    double normY_1 = (double(posY_1) / double(this->height())) * 100;
+    double normY_2 = (double(posY_2) / double(this->height())) * 100;
+
+    if ((normY_1 > 0) && (normY_2 > 0) &&
+        (normY_1 < 100) && (normY_2 < 100)) {
+        double posX_1 = calculateCirclarIntercept(normY_1);
+        double posX_2 = calculateCirclarIntercept(normY_2);
+
+        log->info(QString("(%1, %2) (%3, %4)").arg(posX_1).arg(normY_1).arg(posX_2).arg(normY_2));
+
+        double arc = atan2(normY_2 - normY_1, posX_2 - posX_1);
+
+        return arc;
+    }
 }

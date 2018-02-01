@@ -74,7 +74,7 @@ bool MainWindow::initTestBox() {
     wrapperLayout->addWidget(menuList, 0, 0, Qt::AlignCenter);
 
     centralStack->addWidget(wrapperWidget);
-    centralStack->setMinimumSize(300, 300);
+    centralStack->setMinimumSize(400, 400);
 
     return success_flag;
 }

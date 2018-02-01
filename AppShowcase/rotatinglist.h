@@ -1,8 +1,10 @@
 #ifndef ROTATINGLIST_H
 #define ROTATINGLIST_H
 
-#include <QWidget>
+#include <QFrame>
 #include <QList>
+
+#include <QPoint>
 
 namespace logger {
 class Logger;
@@ -10,7 +12,7 @@ class Logger;
 
 class RotatingListWidget;
 
-class RotatingList : public QWidget
+class RotatingList : public QFrame
 {
     Q_OBJECT
 public:
@@ -24,6 +26,7 @@ public:
 
     void resizeEvent(QResizeEvent*);
     void mousePressEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
 
     void addWidget(QString widgetText);
 
@@ -38,6 +41,8 @@ public:
     void rotateUp();
 private:
 
+    double calculateCirclarIntercept(double posY);
+    double calculateArcAngle(int posY_1, int posY_2);
     logger::Logger      *log;
 
     QList<RotatingListWidget *> activeWidgets;
@@ -45,9 +50,10 @@ private:
 
     int     maxActiveWidgets;
 
-    int    widgetHeight_pix;
-    int    widgetWidth_pix;
+    int     widgetHeight_pix;
+    int     widgetWidth_pix;
 
+    QPoint  prevMouseHoldLocation;
 
 
 signals:

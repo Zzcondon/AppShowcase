@@ -12,6 +12,7 @@ using namespace logger;
 Logger::Logger(QObject* parent): QObject(parent),
 log(),
 logFilename(""),
+logLevel(LogType::LOG_INFO),
 overrideName_flag(false),
 configFilename(),
 error_flag(false)
@@ -69,6 +70,10 @@ void Logger::close() {
 
 }
 
+void Logger::setLogLevel(LogType type) {
+    logLevel = type;
+}
+
 bool Logger::openLogFile() {
     bool openSuccess_flag = true;
 
@@ -103,66 +108,80 @@ QString Logger::getTimestamp() {
 
 void Logger::trace(QString nMsg) {
 
-    if (!error_flag) {
-        QString logMsg("TRACE - " + nMsg);
-        qDebug().noquote() << logMsg;
+    if (logLevel <= LogType::LOG_TRACE) {
+        if (!error_flag) {
+            QString logMsg("TRACE - " + nMsg);
+            qDebug().noquote() << logMsg;
 
-        logMsg.append("\n");
+            logMsg.append("\n");
 
-        log.append(logMsg);
-        logStream << logMsg;
+            log.append(logMsg);
+            logStream << logMsg;
+        }
     }
 }
 
 void Logger::debug(QString nMsg) {
-    if (!error_flag) {
-        QString logMsg("DEBUG - " + nMsg);
-        qDebug().noquote() << logMsg;
 
-        logMsg.append("\n");
+    if (logLevel <= LogType::LOG_DEBUG) {
+        if (!error_flag) {
+            QString logMsg("DEBUG - " + nMsg);
+            qDebug().noquote() << logMsg;
 
-        log.append(logMsg);
-        logStream << logMsg;
-        logStream.flush();
+            logMsg.append("\n");
+
+            log.append(logMsg);
+            logStream << logMsg;
+            logStream.flush();
+        }
     }
 }
 
 void Logger::info(QString nMsg) {
-    if (!error_flag) {
-        QString logMsg("INFO - " + nMsg);
-        qDebug().noquote() << logMsg;
 
-        logMsg.append("\n");
+    if (logLevel <= LogType::LOG_INFO) {
+        if (!error_flag) {
+            QString logMsg("INFO - " + nMsg);
+            qDebug().noquote() << logMsg;
 
-        log.append(logMsg);
-        logStream << logMsg;
-        logStream.flush();
+            logMsg.append("\n");
+
+            log.append(logMsg);
+            logStream << logMsg;
+            logStream.flush();
+        }
     }
 }
 
 void Logger::warn(QString nMsg) {
-    if (!error_flag) {
-        QString logMsg("WARN - " + nMsg);
-        qDebug().noquote() << logMsg;
 
-        logMsg.append("\n");
+    if (logLevel <= LogType::LOG_WARN) {
+        if (!error_flag) {
+            QString logMsg("WARN - " + nMsg);
+            qDebug().noquote() << logMsg;
 
-        log.append(logMsg);
-        logStream << logMsg;
-        logStream.flush();
+            logMsg.append("\n");
+
+            log.append(logMsg);
+            logStream << logMsg;
+            logStream.flush();
+        }
     }
 }
 
 void Logger::err(QString nMsg) {
-    if (!error_flag) {
-        QString logMsg("ERROR - " + nMsg);
-        qDebug().noquote() << logMsg;
 
-        logMsg.append("\n");
+    if (logLevel <= LogType::LOG_ERROR) {
+        if (!error_flag) {
+            QString logMsg("ERROR - " + nMsg);
+            qDebug().noquote() << logMsg;
 
-        log.append(logMsg);
-        logStream << logMsg;
-        logStream.flush();
+            logMsg.append("\n");
+
+            log.append(logMsg);
+            logStream << logMsg;
+            logStream.flush();
+        }
     }
 }
 

@@ -2,8 +2,9 @@
 #define ROTATINGLISTWIDGET_H
 
 #include <QWidget>
+#include <QLabel>
 
-class RotatingListWidget : public QWidget
+class RotatingListWidget : public QLabel
 {
     Q_OBJECT
 public:

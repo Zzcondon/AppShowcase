@@ -39,6 +39,9 @@ public:
 
     void rotateDown();
     void rotateUp();
+
+    void cycleDown();
+    void cycleUp();
 private:
 
     double calculateCirclarIntercept(double posY);
@@ -48,7 +51,7 @@ private:
 
     logger::Logger      *log;
 
-    QQueue<RotatingListWidget *> activeWidgets;
+    QList <RotatingListWidget *> activeWidgets;
 
     int     firstIndex;
     double  angleOffset_deg;

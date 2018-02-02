@@ -7,6 +7,7 @@
 
 #include <QDebug>
 #include <QPainter>
+#include <QTime>
 
 #ifndef M_PI
 const double M_PI = 3.14159265358979323846;
@@ -60,7 +61,7 @@ void RotatingList::snapWidgetLocations() {
 
     int numWidgets = activeWidgets.size();
 
-    QQueue <RotatingListWidget *> copy(activeWidgets);
+    QList <RotatingListWidget *> copy(activeWidgets);
 
     if (numWidgets > 0) {
 
@@ -81,7 +82,7 @@ void RotatingList::snapWidgetLocations() {
             }
 
             for (int i = 0; (i < numWidgets) && (i < 5); i++) {
-                RotatingListWidget *currentWidget = copy.dequeue();
+                RotatingListWidget *currentWidget = copy.takeFirst();
 
                 double nAngle = (30 * i) + startingAngle_deg + angleOffset_deg;
                 double y_val = angleToPos(nAngle) - currentWidget->height()/2; // offset position to center of widget
@@ -89,7 +90,7 @@ void RotatingList::snapWidgetLocations() {
 
                 //log->info(QString("Text: %1 Angle: %2 Y: %3").arg(currentWidget->text()).arg(nAngle).arg(y_val));
 
-                currentWidget->show();
+                currentWidget->paint_flag = true;
             }
 
         }
@@ -98,7 +99,7 @@ void RotatingList::snapWidgetLocations() {
 }
 
 void RotatingList::resizeEvent(QResizeEvent * /*event*/) {
-    snapWidgetLocations();
+    //snapWidgetLocations();
 }
 
 void RotatingList::mousePressEvent(QMouseEvent *event) {
@@ -115,18 +116,27 @@ void RotatingList::mousePressEvent(QMouseEvent *event) {
 
 void RotatingList::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
-        angleOffset_deg += calculateArcAngle(prevMouseHoldLocation.y(), event->pos().y());
 
-        log->info(QString("ARC %1").arg(angleOffset_deg));
+        double nAngle = calculateArcAngle(prevMouseHoldLocation.y(), event->pos().y());
 
-        if (angleOffset_deg > 30) {
-            angleOffset_deg = 30;
-        }
-        else if (angleOffset_deg < -30) {
-            angleOffset_deg = -30;
-        }
+        //angleOffset_deg = nAngle;
+        log->info(QString("ARC %1").arg(nAngle));
 
-        updatePositions();
+
+//        while (angleOffset_deg > 30) {
+//            cycleDown();
+//            angleOffset_deg -= 30;
+//        }
+
+//        while (angleOffset_deg < -30) {
+//            cycleUp();
+//            angleOffset_deg += 30;
+//        }
+
+
+//        updatePositions();
+//        log->info(QString("END MOUSE MOVE %1 ").arg(QTime::currentTime().toString("s.zzz")));
+        //prevMouseHoldLocation = event->pos();
     }
 }
 
@@ -153,8 +163,8 @@ void RotatingList::addWidget(QString widgetText) {
     nWidget->setFixedSize(widgetWidth_pix, widgetHeight_pix);
     nWidget->setText(widgetText);
 
-    nWidget->hide();
-    activeWidgets.enqueue(nWidget);
+    nWidget->paint_flag = false;
+    activeWidgets.push_back(nWidget);
 
 }
 
@@ -162,46 +172,51 @@ void RotatingList::updatePositions() {
 
     log->trace("RotatingList.updatePositions");
 
+
     snapWidgetLocations();
 
+
+    for (int i = 5; i < activeWidgets.size(); i++) {
+        activeWidgets.at(i)->paint_flag = false;
+    }
 
 }
 
 void RotatingList::setStackOrder() {
 
-    QQueue <RotatingListWidget *>  copy(activeWidgets);
+    QList <RotatingListWidget *>  copy(activeWidgets);
 
     int numWidgets = copy.size();
     if (numWidgets == 2) {
-        RotatingListWidget *widget1 = copy.dequeue();
-        RotatingListWidget *widget2 = copy.dequeue();
+        RotatingListWidget *widget1 = copy.takeFirst();
+        RotatingListWidget *widget2 = copy.takeFirst();
 
         widget1->stackUnder(widget2);
     }
     else if (numWidgets == 3) {
-        RotatingListWidget *widget1 = copy.dequeue();
-        RotatingListWidget *widget2 = copy.dequeue();
-        RotatingListWidget *widget3 = copy.dequeue();
+        RotatingListWidget *widget1 = copy.takeFirst();
+        RotatingListWidget *widget2 = copy.takeFirst();
+        RotatingListWidget *widget3 = copy.takeFirst();
 
         widget1->stackUnder(widget2);
         widget3->stackUnder(widget2);
     }
     else if (numWidgets == 4) {
-        RotatingListWidget *widget1 = copy.dequeue();
-        RotatingListWidget *widget2 = copy.dequeue();
-        RotatingListWidget *widget3 = copy.dequeue();
-        RotatingListWidget *widget4 = copy.dequeue();
+        RotatingListWidget *widget1 = copy.takeFirst();
+        RotatingListWidget *widget2 = copy.takeFirst();
+        RotatingListWidget *widget3 = copy.takeFirst();
+        RotatingListWidget *widget4 = copy.takeFirst();
 
         widget1->stackUnder(widget2);
         widget2->stackUnder(widget3);
         widget4->stackUnder(widget3);
     }
     else if (numWidgets > 4) {
-        RotatingListWidget *widget1 = copy.dequeue();
-        RotatingListWidget *widget2 = copy.dequeue();
-        RotatingListWidget *widget3 = copy.dequeue();
-        RotatingListWidget *widget4 = copy.dequeue();
-        RotatingListWidget *widget5 = copy.dequeue();
+        RotatingListWidget *widget1 = copy.takeFirst();
+        RotatingListWidget *widget2 = copy.takeFirst();
+        RotatingListWidget *widget3 = copy.takeFirst();
+        RotatingListWidget *widget4 = copy.takeFirst();
+        RotatingListWidget *widget5 = copy.takeFirst();
 
         widget1->stackUnder(widget2);
         widget2->stackUnder(widget3);
@@ -215,6 +230,20 @@ void RotatingList::rotateDown() {
 }
 
 void RotatingList::rotateUp() {
+
+}
+
+void RotatingList::cycleDown() {
+    RotatingListWidget *backWidget = activeWidgets.takeLast();
+
+    log->info(QString("Cycle Off %1").arg(backWidget->text()));
+    activeWidgets.push_front(backWidget);
+}
+
+void RotatingList::cycleUp() {
+    RotatingListWidget *frontWidget = activeWidgets.takeFirst();
+    activeWidgets.push_back(frontWidget);
+
 }
 
 double RotatingList::calculateCirclarIntercept(double posY) {
@@ -238,6 +267,20 @@ double RotatingList::calculateArcAngle(int posY_1, int posY_2) {
     double normY_1 = (double(posY_1) / useableHeight) * 100;
     double normY_2 = (double(posY_2) / useableHeight) * 100;
 
+    if (normY_1 < 0) {
+        normY_1 = 0;
+    }
+    else if (normY_1 > 100) {
+        normY_1 = 100;
+    }
+
+    if (normY_2 < 0) {
+        normY_2 = 0;
+    }
+    else if (normY_2 > 100) {
+        normY_2 = 100;
+    }
+
     if ((normY_1 >= 0) && (normY_2 >= 0) &&
         (normY_1 <= 100) && (normY_2 <= 100)) {
         double posX_1 = calculateCirclarIntercept(normY_1);
@@ -247,8 +290,15 @@ double RotatingList::calculateArcAngle(int posY_1, int posY_2) {
         //log->info(QString("a: %1 b: %2 c: %3").arg(s2).arg(s3).arg(s1));
         //log->info(QString("Dist: %1").arg(s1));
 
-        double arc_rad = (asin(((s1 - 50) / 50)));//(pow(s2, 2) + pow(s3, 2) - pow(s1, 2)) / (2 * s2 * s3);
-        arc_deg = (arc_rad * 180) / M_PI + 90;
+        double input = ((s1 - 50) / 50);
+
+        if ((input >= -1) && (input <= 1)) {
+            double arc_rad = (asin(input));//(pow(s2, 2) + pow(s3, 2) - pow(s1, 2)) / (2 * s2 * s3);
+            arc_deg = (arc_rad * 180) / M_PI + 90;
+        }
+        else {
+            log->warn(QString("RotatingList.calculateArcAngle: Invalid asin input %1").arg(input));
+        }
     }
 
     if (posY_1 > posY_2) {

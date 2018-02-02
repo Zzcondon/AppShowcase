@@ -2,7 +2,8 @@
 
 #include <QDebug>
 
-RotatingListWidget::RotatingListWidget(QWidget *parent) : QLabel(parent)
+RotatingListWidget::RotatingListWidget(QWidget *parent) : QLabel(parent),
+    paint_flag(true)
 {
 //    QPixmap image("../AppShowcase/Resources/dummy.jpg");
 
@@ -15,9 +16,17 @@ RotatingListWidget::RotatingListWidget(QWidget *parent) : QLabel(parent)
 
     // set black background
     pal.setColor(QPalette::Background, Qt::white);
-    setAutoFillBackground(true);
+    //setAutoFillBackground(true);
     setPalette(pal);
 
     setAlignment(Qt::AlignCenter);
     setFrameStyle(QFrame::Box);
+
+    setMouseTracking(false);
+}
+
+void RotatingListWidget::paintEvent(QPaintEvent *event) {
+    if (paint_flag) {
+        QLabel::paintEvent(event);
+    }
 }

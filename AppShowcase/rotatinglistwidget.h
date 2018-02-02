@@ -10,6 +10,10 @@ class RotatingListWidget : public QLabel
 public:
     explicit RotatingListWidget(QWidget *parent = nullptr);
 
+    void paintEvent(QPaintEvent *event);
+
+    bool paint_flag;
+
 signals:
 
 public slots:
